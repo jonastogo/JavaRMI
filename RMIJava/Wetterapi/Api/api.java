@@ -8,7 +8,7 @@ import java.net.URLConnection;
 import java.util.ArrayList;
 
 public class api {
-	private static String getUrlSource(String url) throws IOException {
+	public String getUrlSource(String url) throws IOException {
 		URL link = new URL(url);
 		URLConnection yc = link.openConnection();
 		BufferedReader in = new BufferedReader(new InputStreamReader(yc.getInputStream(), "UTF-8"));
