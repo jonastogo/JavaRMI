@@ -24,6 +24,7 @@ public class Client {
 		System.out.println("Eingabe  z.B.: Herford     oder   32051,de           oder   Herford,de");
 		System.out.println("Eingabeformat: Stadtname   oder   PLZ,Länderkürzel   oder   Stadtname,Länderkürzel");
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+
 		try {
 			System.out.print("\nCity:  ");
 			client.city = br.readLine();
@@ -50,14 +51,21 @@ public class Client {
 				client.id = client.getIdFromCity(client.city);
 				client.source = client.read.getUrlSource("http://api.openweathermap.org/data/2.5/forecast/city?id=" + client.id + "&APPID=722920868a0a0266c859a174da690bc1");
 			} else {
-				if (client.cityZIP == 0 && !client.countryID.equals(""))
+				if (client.cityZIP == 0 && !client.countryID.equals("")) {
+					if (client.cityID.contains(" ")) {
+						client.cityID = client.cityID.replaceAll("\\s", "%20");
+					}
+					System.out.println("http://api.openweathermap.org/data/2.5/forecast/city?q=" + client.cityID + "," + client.countryID + "&APPID=722920868a0a0266c859a174da690bc1");
 					client.source = client.read.getUrlSource("http://api.openweathermap.org/data/2.5/forecast/city?q=" + client.cityID + "," + client.countryID + "&APPID=722920868a0a0266c859a174da690bc1");
-				else
+				} else {
 					client.source = client.read.getUrlSource("http://api.openweathermap.org/data/2.5/forecast/city?zip=" + client.cityZIP + "," + client.countryID + "&APPID=722920868a0a0266c859a174da690bc1");
+				}
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			System.out.println("Sie haben eine ungültige Eingabe gemacht!");
+			return;
 		}
+
 		String formatedSource = client.source.replaceAll("list\\\":\\[", "list\":\\[\n").replaceAll("00\\\"\\},", "00\"}\n");
 		client.sourceLines = formatedSource.split("\\n");
 		int cityIndex = client.sourceLines[0].indexOf("\"name\":\"");
@@ -75,7 +83,8 @@ public class Client {
 				temp_min -= 273.15;
 				System.out.printf(" -> Min Temp: %.1f°C", temp_min);
 			} catch (NumberFormatException e) {
-				e.printStackTrace();
+				System.out.println("Formatting failed!");
+				return;
 			}
 			int b = client.sourceLines[i].indexOf("temp_max");
 			try {
@@ -83,7 +92,8 @@ public class Client {
 				temp_max -= 273.15;
 				System.out.printf(" -> Max Temp: %.1f°C", temp_max);
 			} catch (NumberFormatException e) {
-				e.printStackTrace();
+				System.out.println("Formatting failed!");
+				return;
 			}
 		}
 
@@ -92,6 +102,7 @@ public class Client {
 	public String getIdFromCity(String city) {
 		for (List l : list) {
 			if (l.getName().equalsIgnoreCase(city)) {
+				System.out.println(l.getId());
 				return l.getId();
 			}
 		}
