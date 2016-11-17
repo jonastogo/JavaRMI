@@ -45,11 +45,11 @@ public class Client {
 			System.out.println("Sie haben eventuell keine gültige Stadt eingegeben!");
 			return;
 		}
-		client.id = client.getIdFromCity(client.city);
 		try {
-			if (client.cityZIP == 0 && client.countryID.equals(""))
+			if (client.cityZIP == 0 && client.countryID.equals("")) {
+				client.id = client.getIdFromCity(client.city);
 				client.source = client.read.getUrlSource("http://api.openweathermap.org/data/2.5/forecast/city?id=" + client.id + "&APPID=722920868a0a0266c859a174da690bc1");
-			else {
+			} else {
 				if (client.cityZIP == 0 && !client.countryID.equals(""))
 					client.source = client.read.getUrlSource("http://api.openweathermap.org/data/2.5/forecast/city?q=" + client.cityID + "," + client.countryID + "&APPID=722920868a0a0266c859a174da690bc1");
 				else
