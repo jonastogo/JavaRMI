@@ -3,24 +3,20 @@ package Api;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
+import java.net.URL;
+import java.net.URLConnection;
 
 public class Client {
 
-	private ArrayList<List>	list	= new ArrayList<List>();
-	private String			id		= "";
-	private api				read;
-	private String			source;
-	private String			sourceLines[];
-	private String			city;
-	private String			cityID;
-	private int				cityZIP;
-	private String			countryID;
+	private String	source;
+	private String	sourceLines[];
+	private String	city;
+	private String	cityID;
+	private int		cityZIP;
+	private String	countryID;
 
 	public static void main(String[] args) {
 		Client client = new Client();
-		client.read = new api();
-		client.read.readCSV(client.list);
 		System.out.println("Eingabe  z.B.: Herford     oder   32051,de           oder   Herford,de");
 		System.out.println("Eingabeformat: Stadtname   oder   PLZ,Länderkürzel   oder   Stadtname,Länderkürzel");
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
@@ -40,25 +36,28 @@ public class Client {
 			} else {
 				client.countryID = "";
 				client.cityZIP = 0;
-				client.cityID = "";
+				client.cityID = client.city;
 			}
 		} catch (IOException e) {
 			System.out.println("Sie haben eventuell keine gültige Stadt eingegeben!");
 			return;
 		}
+
 		try {
 			if (client.cityZIP == 0 && client.countryID.equals("")) {
-				client.id = client.getIdFromCity(client.city);
-				client.source = client.read.getUrlSource("http://api.openweathermap.org/data/2.5/forecast/city?id=" + client.id + "&APPID=722920868a0a0266c859a174da690bc1");
+				if (client.cityID.contains(" ")) {
+					client.cityID = client.cityID.replaceAll("\\s", "%20");
+				}
+				client.source = client.getUrlSource("http://api.openweathermap.org/data/2.5/forecast/city?q=" + client.cityID + "&APPID=722920868a0a0266c859a174da690bc1");
 			} else {
 				if (client.cityZIP == 0 && !client.countryID.equals("")) {
 					if (client.cityID.contains(" ")) {
 						client.cityID = client.cityID.replaceAll("\\s", "%20");
 					}
 					System.out.println("http://api.openweathermap.org/data/2.5/forecast/city?q=" + client.cityID + "," + client.countryID + "&APPID=722920868a0a0266c859a174da690bc1");
-					client.source = client.read.getUrlSource("http://api.openweathermap.org/data/2.5/forecast/city?q=" + client.cityID + "," + client.countryID + "&APPID=722920868a0a0266c859a174da690bc1");
+					client.source = client.getUrlSource("http://api.openweathermap.org/data/2.5/forecast/city?q=" + client.cityID + "," + client.countryID + "&APPID=722920868a0a0266c859a174da690bc1");
 				} else {
-					client.source = client.read.getUrlSource("http://api.openweathermap.org/data/2.5/forecast/city?zip=" + client.cityZIP + "," + client.countryID + "&APPID=722920868a0a0266c859a174da690bc1");
+					client.source = client.getUrlSource("http://api.openweathermap.org/data/2.5/forecast/city?zip=" + client.cityZIP + "," + client.countryID + "&APPID=722920868a0a0266c859a174da690bc1");
 				}
 			}
 		} catch (IOException e) {
@@ -96,16 +95,19 @@ public class Client {
 				return;
 			}
 		}
-
 	}
 
-	public String getIdFromCity(String city) {
-		for (List l : list) {
-			if (l.getName().equalsIgnoreCase(city)) {
-				System.out.println(l.getId());
-				return l.getId();
-			}
+	public String getUrlSource(String url) throws IOException {
+		URL link = new URL(url);
+		URLConnection yc = link.openConnection();
+		BufferedReader in = new BufferedReader(new InputStreamReader(yc.getInputStream(), "UTF-8"));
+		String inputLine;
+		StringBuilder a = new StringBuilder();
+		while ((inputLine = in.readLine()) != null) {
+			a.append(inputLine);
 		}
-		return null;
+		in.close();
+
+		return a.toString();
 	}
 }
